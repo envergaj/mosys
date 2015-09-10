@@ -1,6 +1,8 @@
 package mosys;
 
-import helper.PayrollTypes;
+import helper.PayrollHalfTypes;
+import helper.PayrollMarkTypes;
+import helper.PayrollPeriodTypes;
 
 import java.io.File;
 import java.io.IOException;
@@ -111,8 +113,9 @@ public class Test {
 		System.out.println("all other entries added to database\n\n");
 	}
 	
-	public static void payroll(Workbook workbook, Connection connection) throws SQLException {
-		Payroll payroll = new Payroll(workbook, connection, PayrollTypes.TWO);
+	public static void payroll(Workbook workbook, Connection connection, PayrollMarkTypes mark,
+			PayrollPeriodTypes period, PayrollHalfTypes half) throws SQLException {
+		Payroll payroll = new Payroll(workbook, connection, mark, period, half);
 		payroll.calculatePayroll();
 		
 		System.out.println("payroll calculated");
