@@ -3,35 +3,34 @@ package payroll;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.TreeMap;
 
 import helper.Helper;
 import helper.PayrollHalfTypes;
 import helper.PayrollPeriodTypes;
-import helper.PayrollMarkTypes;
 
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 
+import variable.Constants;
 import deduction.Deduction;
 
 public class Payroll {
 	private Workbook workbook;
 	private Connection connection;
-	private PayrollMarkTypes mark;
 	private PayrollPeriodTypes period;
 	private PayrollHalfTypes half;
 	private Deduction deduction;
 	private Map<String, Integer> positions;
 	
-	public Payroll(Workbook workbook, Connection connection, PayrollMarkTypes mark, 
-			PayrollPeriodTypes period, PayrollHalfTypes half)
+	public Payroll(Workbook workbook, Connection connection, PayrollPeriodTypes period,
+			PayrollHalfTypes half)
 			throws SQLException {
 		this.workbook = workbook;
 		this.connection = connection;
-		this.mark = mark;
 		this.period = period;
 		this.half = half;
 		this.deduction = new Deduction(connection);
@@ -52,165 +51,26 @@ public class Payroll {
 	
 	public void calculatePayroll() throws SQLException {
 		Map<String, Object[]> rows = new TreeMap<String, Object[]>();
+		HashSet<Integer> filledColumns = new HashSet<Integer>();
 		Sheet sheet = workbook.getSheetAt(0);
-		
-		Object[] headers = {
-				"empno",
-				"name",
-				"rate",
-				"cola",
-				"tcola",
-				"sea",
-				"tsea",
-				"ctpa",
-				"tctpa",
-				"days",
-				"basic",
-				"minutes",
-				"tminutes",
-				"hours",
-				"thours",
-				"excess",
-				"texcess",
-				"ndreg",
-				"tndreg",
-				"ndot",
-				"tndot",
-				"dod" + mark.getMark(),
-				"tdod" + mark.getMark(),
-				"dodexcess",
-				"tdodexcess",
-				"dodndreg",
-				"tdodndreg",
-				"dodndot",
-				"tdodndot",
-				"splhol" + mark.getMark(),
-				"tsplhol" + mark.getMark(),
-				"splholexcess",
-				"tsplholexcess",
-				"splholndreg",
-				"tsplholndreg",
-				"splholndot",
-				"tsplholndot",
-				"splholrd" + mark.getMark(),
-				"tsplholrd" + mark.getMark(),
-				"splholrdexcess",
-				"tsplholrdexcess",
-				"splholrdndreg",
-				"tsplholrdndreg",
-				"splholrdndot",
-				"tsplholrdndot",
-				"lglhol",
-				"tlglhol",
-				"lglhol",
-				"tlglhol",
-				"lglholexcess",
-				"tlglholexcess",
-				"lglholndreg",
-				"tlglholndreg",
-				"lglholndot",
-				"tlglholndot",
-				"lglholrd" + mark.getMark(),
-				"tlglholrd" + mark.getMark(),
-				"lglholrdexcess",
-				"tlglholrdexcess",
-				"lglholrdndreg",
-				"tlglholrdndreg",
-				"lglholrdndot",
-				"tlglholrdndot",
-				"grosspay",
-				"sss",
-				"philhealth",
-				"pagibig",
-				"deductions",
-				"total"
-		};
-		
-		rows.put("1", headers);
+		rows.put("1", Constants.HEADERS);
 		
 		for (int i = 1; i < sheet.getLastRowNum(); i++) {
 			Row row = sheet.getRow(i);
-			double rate = row.getCell(positions.get("rate")).getNumericCellValue();
-			double days = row.getCell(positions.get("days")).getNumericCellValue();
+			double rate = getNumericValue(row, "rate");
+			double days = getNumericValue(row, "days");
+			double basic = rate * days;
+			double cola = getNumericValue(row, "cola");
+			double sea = getNumericValue(row, "sea");
+			double ctpa = getNumericValue(row, "ctpa");
 			double divisor = period.getDivisor();
-			double allRate = (rate + 
-					row.getCell(positions.get("cola")).getNumericCellValue() + 
-					row.getCell(positions.get("sea")).getNumericCellValue() + 
-					row.getCell(positions.get("ctpa")).getNumericCellValue());
+			double allRate = rate + cola + sea + ctpa;
 			double dividedAllRate = allRate / divisor;
 			double dividedRate = rate / divisor;
-			double basic = row.getCell(positions.get("days")).getNumericCellValue() * rate;
-			
-			if (period == PayrollPeriodTypes.MONTHLY || period == PayrollPeriodTypes.SPECIAL_MONTHLY) {
-				basic = allRate / 2.0; // -absent, but where is that?
-			}
-			
-			Object[] data1 = {
-					row.getCell(positions.get("empno")).getStringCellValue(),
-					row.getCell(positions.get("name")).getStringCellValue(),
-					row.getCell(positions.get("rate")).getNumericCellValue(),
-					row.getCell(positions.get("cola")).getNumericCellValue(),
-					row.getCell(positions.get("cola")).getNumericCellValue() * days,
-					row.getCell(positions.get("sea")).getNumericCellValue(),
-					row.getCell(positions.get("sea")).getNumericCellValue() * days,
-					row.getCell(positions.get("ctpa")).getNumericCellValue(),
-					row.getCell(positions.get("ctpa")).getNumericCellValue() * days,
-					row.getCell(positions.get("days")).getNumericCellValue(),
-					basic,
-					row.getCell(positions.get("minutes")).getNumericCellValue(),
-					row.getCell(positions.get("minutes")).getNumericCellValue() * dividedAllRate / 60.0 * -1.0,
-					row.getCell(positions.get("hours")).getNumericCellValue(),
-					row.getCell(positions.get("hours")).getNumericCellValue() * dividedAllRate * -1.0,
-					row.getCell(positions.get("excess")).getNumericCellValue(),
-					row.getCell(positions.get("excess")).getNumericCellValue() * dividedRate * 1.25,
-					row.getCell(positions.get("ndreg")).getNumericCellValue(),
-					row.getCell(positions.get("ndreg")).getNumericCellValue() * dividedRate * 0.1,
-					row.getCell(positions.get("ndot")).getNumericCellValue(),
-					row.getCell(positions.get("ndot")).getNumericCellValue() * dividedRate * 0.1 * 1.25,
-					row.getCell(positions.get("dod" + mark.getMark())).getNumericCellValue(),
-					row.getCell(positions.get("dod" + mark.getMark())).getNumericCellValue() * dividedRate * (0.3 + mark.getIncrease()),
-					row.getCell(positions.get("dodexcess")).getNumericCellValue(),
-					row.getCell(positions.get("dodexcess")).getNumericCellValue() * dividedRate * 1.3 * 1.3,
-					row.getCell(positions.get("dodndreg")).getNumericCellValue(),
-					row.getCell(positions.get("dodndreg")).getNumericCellValue() * dividedRate * 0.1 * 1.3,
-					row.getCell(positions.get("dodndot")).getNumericCellValue(),
-					row.getCell(positions.get("dodndot")).getNumericCellValue() * dividedRate * 0.1 * 1.3 * 1.3,
-					row.getCell(positions.get("splhol" + mark.getMark())).getNumericCellValue(),
-					row.getCell(positions.get("splhol" + mark.getMark())).getNumericCellValue() * dividedRate * (0.3 + mark.getIncrease()),
-					row.getCell(positions.get("splholexcess")).getNumericCellValue(),
-					row.getCell(positions.get("splholexcess")).getNumericCellValue() * dividedRate * 1.3 * 1.3,
-					row.getCell(positions.get("splholndreg")).getNumericCellValue(),
-					row.getCell(positions.get("splholndreg")).getNumericCellValue() * dividedRate * 0.1 * 1.3,
-					row.getCell(positions.get("splholndot")).getNumericCellValue(),
-					row.getCell(positions.get("splholndot")).getNumericCellValue() * dividedRate * 0.1 * 1.3 * 1.3,
-					row.getCell(positions.get("splholrd" + mark.getMark())).getNumericCellValue(),
-					row.getCell(positions.get("splholrd" + mark.getMark())).getNumericCellValue() * dividedRate * (0.5 + mark.getIncrease()),
-					row.getCell(positions.get("splholrdexcess")).getNumericCellValue(),
-					row.getCell(positions.get("splholrdexcess")).getNumericCellValue() * dividedRate * 1.5 * 1.3,
-					row.getCell(positions.get("splholrdndreg")).getNumericCellValue(),
-					row.getCell(positions.get("splholrdndreg")).getNumericCellValue() * dividedRate * 0.1 * 1.5,
-					row.getCell(positions.get("splholrdndot")).getNumericCellValue(),
-					row.getCell(positions.get("splholrdndot")).getNumericCellValue() * dividedRate * 0.1 * 1.5 * 1.3,
-					row.getCell(positions.get("lglhol1")).getNumericCellValue(),
-					row.getCell(positions.get("lglhol1")).getNumericCellValue() * dividedAllRate,
-					row.getCell(positions.get("lglhol2")).getNumericCellValue(),
-					row.getCell(positions.get("lglhol2")).getNumericCellValue() * dividedAllRate * 2.0,
-					row.getCell(positions.get("lglholexcess")).getNumericCellValue(),
-					row.getCell(positions.get("lglholexcess")).getNumericCellValue() * dividedRate * 2.6,
-					row.getCell(positions.get("lglholndreg")).getNumericCellValue(),
-					row.getCell(positions.get("lglholndreg")).getNumericCellValue() * dividedRate * 0.1 * 2.0,
-					row.getCell(positions.get("lglholndot")).getNumericCellValue(),
-					row.getCell(positions.get("lglholndot")).getNumericCellValue() * dividedRate * 0.1 * 2.6,
-					row.getCell(positions.get("lglholrd" + mark.getMark())).getNumericCellValue(),
-					row.getCell(positions.get("lglholrd" + mark.getMark())).getNumericCellValue() * dividedAllRate * (1.6 + mark.getIncrease()),
-					row.getCell(positions.get("lglholrdexcess")).getNumericCellValue(),
-					row.getCell(positions.get("lglholrdexcess")).getNumericCellValue() * dividedRate * 2.6 * 1.3,
-					row.getCell(positions.get("lglholrdndreg")).getNumericCellValue(),
-					row.getCell(positions.get("lglholrdndreg")).getNumericCellValue() * dividedRate * 0.1 * 2.6,
-					row.getCell(positions.get("lglholrdndot")).getNumericCellValue(),
-					row.getCell(positions.get("lglholrdndot")).getNumericCellValue() * dividedRate * 0.1 * 2.6 * 1.3
-			};
-			
+			double dividedCSC = (cola + sea + ctpa) / divisor;
+
+			Object[] data1 = calculateData(row, basic, days, dividedCSC, 
+					dividedRate, dividedAllRate, allRate);
 			double sum = 0;
 			
 			for (int j = 4; j < data1.length; j += 2) {
@@ -220,7 +80,9 @@ public class Payroll {
 			double sss = getSSS(sum);
 			double philhealth = getPhilHealth(sum);
 			double pagibig = getPagibig();
-			double deductions = deduction.applyDeductions(row.getCell(positions.get("empno")).getStringCellValue().trim(), sum);
+			double leftoverSum = sum - sss - philhealth - pagibig;
+			double deductions = deduction.applyDeductions(row.getCell(positions.get("empno")).
+					getStringCellValue().trim(), leftoverSum);
 			
 			Object[] data2 = {
 					sum,
@@ -233,10 +95,170 @@ public class Payroll {
 			
 			Object[] data = concatenate(data1, data2);
 			rows.put(Integer.toString(i + 1), data);
+			
+			for (int j = 0; j < data.length; j++) {
+				if (data[j] instanceof String ||
+						(data[j] instanceof Double && !data[j].equals(0.0))) {
+					filledColumns.add(j);
+				}
+			}
 		}
 		
+		rows = Helper.removeEmptyColumns(rows, filledColumns);
 		Helper.writeWorkbook(rows, "out/payroll.xlsx");
 		deduction.writeDeduction();
+	}
+	
+	private Object[] calculateData(Row row, double basic, double days, 
+			double dividedCSC, double dividedRate, double dividedAllRate,
+			double allRate) {
+		double legalHolidaySum = (days * 8.0 - getNumericValue(row, "hours1") + 
+				getNumericValue(row, "dod3") + getNumericValue(row, "splhol3") + 
+				getNumericValue(row, "lglhol4")) / 8.0;
+		double allowanceSum = (days * 8.0 - getNumericValue(row, "hours1") + 
+				getNumericValue(row, "dod3") + getNumericValue(row, "splhol3") + 
+				getNumericValue(row, "lglhol4")) / period.getDivisor();
+		double shortageSum = (days * 8.0 - getNumericValue(row, "hours1") + 
+				getNumericValue(row, "dod2") + getNumericValue(row, "splholrd2") + 
+				getNumericValue(row, "lglhol4") + getNumericValue(row, "lglholrd4"))
+				/ 8.0;
+		
+		if (period == PayrollPeriodTypes.MONTHLY || 
+				period == PayrollPeriodTypes.SPECIAL_MONTHLY) {
+			basic = allRate / 2.0; // -absent, but where is that, also needed for monthlyallow
+		}
+		
+		if (period == PayrollPeriodTypes.DAILY) {
+			legalHolidaySum = (getNumericValue(row, "lglhol3") + 
+					getNumericValue(row, "lglhol4") + getNumericValue(row, "lglholrd3") + 
+					getNumericValue(row, "lglholrd4")) / 8.0;
+			allowanceSum = (days * 8.0) - getNumericValue(row, "hours1") + 
+					getNumericValue(row, "dod2") + getNumericValue(row, "splhol2") + 
+					getNumericValue(row, "splholrd2") / 8.0 ;
+			shortageSum = (days * 8.0 - getNumericValue(row, "hours1") + 
+					getNumericValue(row, "dod2") + getNumericValue(row, "splhol2") + 
+					getNumericValue(row, "splholrd2") + getNumericValue(row, "lglhol4") + 
+					getNumericValue(row, "lglholrd4")) / 8.0;
+		}
+		
+		Object[] data = {
+				row.getCell(positions.get("empno")).getStringCellValue(),
+				row.getCell(positions.get("name")).getStringCellValue(),
+				row.getCell(positions.get("rate")).getNumericCellValue(),
+				getNumericValue(row, "days"),
+				basic,
+				getNumericValue(row, "cola"),
+				getNumericValue(row, "cola") * days,
+				getNumericValue(row, "sea"),
+				getNumericValue(row, "sea") * days,
+				getNumericValue(row, "ctpa"),
+				getNumericValue(row, "ctpa") * days,
+				getNumericValue(row, "cola1"),
+				getNumericValue(row, "cola1") * allowanceSum,
+				getNumericValue(row, "sea1"),
+				getNumericValue(row, "sea1") * allowanceSum,
+				getNumericValue(row, "ctpa1"),
+				getNumericValue(row, "ctpa1") * allowanceSum,
+				getNumericValue(row, "lglholcola"),
+				getNumericValue(row, "cola1") * legalHolidaySum,
+				getNumericValue(row, "lglholsea"),
+				getNumericValue(row, "sea1") * legalHolidaySum,
+				getNumericValue(row, "lglholctpa"),
+				getNumericValue(row, "ctpa1") * legalHolidaySum,
+				getNumericValue(row, "minutes"),
+				getNumericValue(row, "minutes") * dividedAllRate / 60.0 * -1.0,
+				getNumericValue(row, "hours"),
+				getNumericValue(row, "hours") * dividedAllRate * -1.0,
+				getNumericValue(row, "hours1"),
+				getNumericValue(row, "hours1") * dividedRate * -1.0,
+				getNumericValue(row, "excess"),
+				getNumericValue(row, "excess") * dividedRate * 1.25,
+				getNumericValue(row, "ndreg"),
+				getNumericValue(row, "ndreg") * dividedRate * 0.1,
+				getNumericValue(row, "ndot"),
+				getNumericValue(row, "ndot") * dividedRate * 0.1 * 1.25,
+				getNumericValue(row, "dod1"),
+				getNumericValue(row, "dod1") * dividedRate * 0.3,
+				getNumericValue(row, "dod2"),
+				getNumericValue(row, "dod2") * dividedRate * 1.3,
+				getNumericValue(row, "dod3"),
+				getNumericValue(row, "dod3") * dividedRate * 1.3 + 
+					getNumericValue(row, "dod3") * dividedCSC,
+				getNumericValue(row, "dodexcess"),
+				getNumericValue(row, "dodexcess") * dividedRate * 1.3 * 1.3,
+				getNumericValue(row, "dodndreg"),
+				getNumericValue(row, "dodndreg") * dividedRate * 0.1 * 1.3,
+				getNumericValue(row, "dodndot"),
+				getNumericValue(row, "dodndot") * dividedRate * 0.1 * 1.3 * 1.3,
+				getNumericValue(row, "splhol1"),
+				getNumericValue(row, "splhol1") * dividedRate * 0.3,
+				getNumericValue(row, "splhol2"),
+				getNumericValue(row, "splhol2") * dividedRate * 1.3,
+				getNumericValue(row, "splhol3"),
+				getNumericValue(row, "splhol3") * dividedRate * 1.3 + 
+					getNumericValue(row, "splhol3") * dividedCSC,
+				getNumericValue(row, "splholexcess"),
+				getNumericValue(row, "splholexcess") * dividedRate * 1.3 * 1.3,
+				getNumericValue(row, "splholndreg"),
+				getNumericValue(row, "splholndreg") * dividedRate * 0.1 * 1.3,
+				getNumericValue(row, "splholndot"),
+				getNumericValue(row, "splholndot") * dividedRate * 0.1 * 1.3 * 1.3,
+				getNumericValue(row, "splholrd1"),
+				getNumericValue(row, "splholrd1") * dividedRate * 0.5,
+				getNumericValue(row, "splholrd2"),
+				getNumericValue(row, "splholrd2") * dividedRate * 1.5,
+				getNumericValue(row, "splholrd3"),
+				getNumericValue(row, "splholrd3") * dividedRate * 1.5 + 
+					getNumericValue(row, "splholrd3") * dividedCSC,
+				getNumericValue(row, "splholrdexcess"),
+				getNumericValue(row, "splholrdexcess") * dividedRate * 1.5 * 1.3,
+				getNumericValue(row, "splholrdndreg"),
+				getNumericValue(row, "splholrdndreg") * dividedRate * 0.1 * 1.5,
+				getNumericValue(row, "splholrdndot"),
+				getNumericValue(row, "splholrdndot") * dividedRate * 0.1 * 1.5 * 1.3,
+				getNumericValue(row, "lglhol1"),
+				getNumericValue(row, "lglhol1") * dividedAllRate,
+				getNumericValue(row, "lglhol2"),
+				getNumericValue(row, "lglhol2") * dividedAllRate * 2.0,
+				getNumericValue(row, "lglhol3"),
+				getNumericValue(row, "lglhol3") * dividedRate,
+				getNumericValue(row, "lglhol4"),
+				getNumericValue(row, "lglhol4") * dividedRate,
+				getNumericValue(row, "lglholexcess"),
+				getNumericValue(row, "lglholexcess") * dividedRate * 2.6,
+				getNumericValue(row, "lglholndreg"),
+				getNumericValue(row, "lglholndreg") * dividedRate * 0.1 * 2.0,
+				getNumericValue(row, "lglholndot"),
+				getNumericValue(row, "lglholndot") * dividedRate * 0.1 * 2.6,
+				getNumericValue(row, "lglholrd1"),
+				getNumericValue(row, "lglholrd1") * dividedAllRate * 1.6,
+				getNumericValue(row, "lglholrd2"),
+				getNumericValue(row, "lglholrd2") * dividedAllRate * 2.6,
+				getNumericValue(row, "lglholrd3"),
+				getNumericValue(row, "lglholrd3") * dividedRate * 1.6,
+				getNumericValue(row, "lglholrd4"),
+				getNumericValue(row, "lglholrd4") * dividedRate * 2.6,
+				getNumericValue(row, "lglholrdexcess"),
+				getNumericValue(row, "lglholrdexcess") * dividedRate * 2.6 * 1.3,
+				getNumericValue(row, "lglholrdndreg"),
+				getNumericValue(row, "lglholrdndreg") * dividedRate * 0.1 * 2.6,
+				getNumericValue(row, "lglholrdndot"),
+				getNumericValue(row, "lglholrdndot") * dividedRate * 0.1 * 2.6 * 1.3,
+				getNumericValue(row, "shortallow"),
+				getNumericValue(row, "shortallow") * shortageSum,
+				getNumericValue(row, "monthlyallow"),
+				getNumericValue(row, "monthlyallow")
+		};
+		
+		return data;
+	}
+	
+	private double getNumericValue(Row row, String header) {
+		if (positions.get(header) != null) {
+			return row.getCell(positions.get(header)).getNumericCellValue();
+		}
+		
+		return 0;
 	}
 	
 	private double getSSS(double salary) {
@@ -331,7 +353,7 @@ public class Payroll {
 		else return 0; // TODO: add a check to see if they're in first half, if not, make 100
 	}
 	
-	public Object[] concatenate(Object[] a, Object[] b) {
+	private Object[] concatenate(Object[] a, Object[] b) {
 	   int aLen = a.length;
 	   int bLen = b.length;
 	   Object[] c= new Object[aLen + bLen];

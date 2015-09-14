@@ -1,7 +1,6 @@
 package mosys;
 
 import helper.PayrollHalfTypes;
-import helper.PayrollMarkTypes;
 import helper.PayrollPeriodTypes;
 
 import java.io.File;
@@ -53,14 +52,14 @@ public class Test {
 //		filename = "test/deduction.xlsx";
 //		workbook = WorkbookFactory.create(new File(filename));
 //		dataEntry(workbook, connection, Modules.DEDUCTION);
-//		
+//	
 //		filename = "test/employeeDeduction.xlsx";
 //		workbook = WorkbookFactory.create(new File(filename));
 //		dataEntry(workbook, connection, Modules.EMPLOYEE_DEDUCTION);
-//		
-//		filename = "test/timesummary.xlsx";
-//		workbook = WorkbookFactory.create(new File(filename));
-//		payroll(workbook, connection);
+		
+		filename = "test/timesummary.xlsx"; // you can use apples or timesummary
+		workbook = WorkbookFactory.create(new File(filename));
+		payroll(workbook, connection, PayrollPeriodTypes.DAILY, PayrollHalfTypes.FIRST);
 	}
 	
 	public static Set<int[]> validate(Workbook workbook, Connection connection, Modules module) throws SQLException {
@@ -113,9 +112,9 @@ public class Test {
 		System.out.println("all other entries added to database\n\n");
 	}
 	
-	public static void payroll(Workbook workbook, Connection connection, PayrollMarkTypes mark,
-			PayrollPeriodTypes period, PayrollHalfTypes half) throws SQLException {
-		Payroll payroll = new Payroll(workbook, connection, mark, period, half);
+	public static void payroll(Workbook workbook, Connection connection, PayrollPeriodTypes period,
+			PayrollHalfTypes half) throws SQLException {
+		Payroll payroll = new Payroll(workbook, connection, period, half);
 		payroll.calculatePayroll();
 		
 		System.out.println("payroll calculated");

@@ -50,9 +50,13 @@ public class Deduction {
 				amortization = principal;
 			}
 			
-			double newSalary = salary - amortization;
+			double extraSalary = salary - deductionSum - Constants.MINIMUM_SALARY;
 			
-			if (newSalary >= Constants.MINIMUM_SALARY) {
+			if (amortization > 0 && extraSalary > 0) {
+				if (amortization >= extraSalary) {
+					amortization = extraSalary;
+				}
+				
 				double newPrincipal = principal - amortization;
 				
 				Object[] data = {
