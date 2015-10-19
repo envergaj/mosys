@@ -10,6 +10,7 @@ public abstract class Headers {
 	private DataTypes[] dataTypes;
 	private int[] duplicateCheckColumns;
 	private String[] duplicateCheckNames;
+	private String addStatement;
 	
 	public Headers(int headerRow, int headerCount, int headerPadding, int databaseFields, String tableName) {
 		this.headerRow = headerRow;
@@ -35,6 +36,10 @@ public abstract class Headers {
 	
 	protected void setDuplicateCheckNames(String[] duplicateCheckNames) {
 		this.duplicateCheckNames = duplicateCheckNames;
+	}
+	
+	protected void setAddStatement(String addStatement) {
+		this.addStatement = addStatement;
 	}
 	
 	public int getHeaderRow() {
@@ -71,5 +76,9 @@ public abstract class Headers {
 
 	public String[] getDuplicateCheckNames() {
 		return duplicateCheckNames;
+	}
+	
+	public String getAddStatement() {
+		return addStatement;
 	}
 }

@@ -35,5 +35,8 @@ public class EmployeeDeductionHeaders extends Headers {
 		this.setDataTypes(dataTypes);
 		this.setDuplicateCheckColumns(duplicateCheckColumns);
 		this.setDuplicateCheckNames(duplicateCheckNames);
+		this.setAddStatement("insert into employeeDeduction (employeeNumber, "
+				+ "employeeName, principal, amortization, deductionShortCode)"
+				+ "values (?, ?, ?, ?, ?);");
 	}
 }

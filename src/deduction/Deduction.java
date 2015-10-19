@@ -34,7 +34,8 @@ public class Deduction {
 		rowIndex = 2;
 	}
 	
-	public double applyDeductions(String employeeNumber, double salary) throws SQLException {
+	public double applyDeductions(String employeeNumber, double salary) 
+			throws SQLException {
 		getStatement.setString(1, employeeNumber);
 		ResultSet deductions = getStatement.executeQuery();
 		double deductionSum = 0;
@@ -71,12 +72,12 @@ public class Deduction {
 				rows.put(Integer.toString(rowIndex), data);
 				rowIndex++;
 				
-				updateStatement.setInt(1, id);
-				updateStatement.setString(2, employeeNumber);
-				updateStatement.setString(3, employeeName);
-				updateStatement.setDouble(4, newPrincipal);
-				updateStatement.setDouble(5, amortization);
-				updateStatement.setString(6, deductionShortCode);
+				updateStatement.setInt(6, id);
+				updateStatement.setString(1, employeeNumber);
+				updateStatement.setString(2, employeeName);
+				updateStatement.setDouble(3, newPrincipal);
+				updateStatement.setDouble(4, amortization);
+				updateStatement.setString(5, deductionShortCode);
 				updateStatement.execute();
 			}
 		}

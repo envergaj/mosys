@@ -17,18 +17,22 @@ import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 
+import billing.Benefits;
 import dataEntry.DataEntry;
 import payroll.Payroll;
+import simplegui.TestDatabase;
 import validation.Validator;
 import variable.Modules;
 
 public class Test {
-	public static void main(String[] args)
-	throws EncryptedDocumentException, InvalidFormatException, IOException, SQLException {
-		Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/mosys", "root", "");
+/*	public static void main(String[] args)
+	throws Exception {
+		TestDatabase tdb = new TestDatabase();
+		Connection connection = tdb.loadDatabase();
+//		Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/mosys", "root", "");
 		String filename;
 		Workbook workbook;
-		
+//		
 //		filename = "test/client.xlsx";
 //		workbook = WorkbookFactory.create(new File(filename));
 //		dataEntry(workbook, connection, Modules.CLIENT);
@@ -56,12 +60,20 @@ public class Test {
 //		filename = "test/employeeDeduction.xlsx";
 //		workbook = WorkbookFactory.create(new File(filename));
 //		dataEntry(workbook, connection, Modules.EMPLOYEE_DEDUCTION);
-		
-		filename = "test/timesummary.xlsx"; // you can use apples or timesummary
-		workbook = WorkbookFactory.create(new File(filename));
-		payroll(workbook, connection, PayrollPeriodTypes.DAILY, PayrollHalfTypes.FIRST);
+//		
+//		filename = "test/timesummary.xlsx"; // you can use apples or timesummary
+//		workbook = WorkbookFactory.create(new File(filename));
+//		payroll(workbook, connection, PayrollPeriodTypes.DAILY, PayrollHalfTypes.FIRST);
+//		
+//		filename = "test/timesummary.xlsx"; // you can use apples or timesummary
+//		workbook = WorkbookFactory.create(new File(filename));
+//		payroll(workbook, null, PayrollPeriodTypes.DAILY, PayrollHalfTypes.SECOND);
+//		
+//		Workbook firstHalf = WorkbookFactory.create(new File("test/payroll1.xlsx"));
+//		Workbook secondHalf = WorkbookFactory.create(new File("test/payroll2.xlsx"));
+//		benefits(firstHalf, secondHalf, null);
 	}
-	
+	*/
 	public static Set<int[]> validate(Workbook workbook, Connection connection, Modules module) throws SQLException {
 		Validator validator = new Validator(workbook, connection, module);
 		
@@ -119,5 +131,16 @@ public class Test {
 		
 		System.out.println("payroll calculated");
 		System.out.println("deductions applied\n\n");
+	}
+	
+	public static void benefits(Workbook firstHalf, Workbook secondHalf, Connection connection) 
+			throws SQLException {
+		Benefits benefits = new Benefits(firstHalf, secondHalf, connection);
+		benefits.getInfo();
+//		benefits.setFixedPhilhealth(10); // if the phil health is fixed
+//		benefits.setFixedSSS(10); // if the sss is fixed
+		benefits.calculateBenefits();
+		
+		System.out.println("benefits calculated");
 	}
 }

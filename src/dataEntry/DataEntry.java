@@ -27,7 +27,8 @@ public class DataEntry {
 	private Set<List<Integer>> duplicateRows;
 	private Headers headers;
 	
-	public DataEntry(Connection connection, Workbook workbook, Modules module, Set<List<Integer>> duplicateRows) {
+	public DataEntry(Connection connection, Workbook workbook, 
+			Modules module, Set<List<Integer>> duplicateRows) {
 		this.connection = connection;
 		this.workbook = workbook;
 		this.module = module;
@@ -39,16 +40,9 @@ public class DataEntry {
 	public void addAll() throws SQLException {
 		DataTypes[] dataTypes = headers.getDataTypes();
 		String tableName = headers.getTableName();
-		tableName = Character.toString(tableName.charAt(0)).toUpperCase() + tableName.substring(1);
-		String command = Constants.ADD_DB + tableName + " (";
-		
-		for (int i = 1; i <= headers.getDatabaseFields(); i++) {
-			if (i == headers.getDatabaseFields()) {
-				command += "?)";
-			} else {
-				command += "?, ";
-			}
-		}
+		tableName = Character.toString(tableName.charAt(0)).toUpperCase() + 
+				tableName.substring(1);
+		String command = headers.getAddStatement();
 		
 		PreparedStatement statement = connection.prepareStatement(command);
 		
@@ -58,11 +52,14 @@ public class DataEntry {
 			if (module == Modules.EMPLOYEE) {
 				statement.setString(17, "");
 				statement.setString(18, "");
-				statement.setString(19, sheet.getRow(0).getCell(1).getStringCellValue().trim());
-				statement.setString(20, sheet.getRow(1).getCell(1).getStringCellValue().trim());
+				statement.setString(19, sheet.getRow(0).getCell(1).
+						getStringCellValue().trim());
+				statement.setString(20, sheet.getRow(1).getCell(1).
+						getStringCellValue().trim());
 			}
 			
-			for (int j = headers.getHeaderRow() + 1; j < sheet.getLastRowNum() - headers.getHeaderPadding(); j++) {
+			for (int j = headers.getHeaderRow() + 1; j < sheet.getLastRowNum() - 
+					headers.getHeaderPadding(); j++) {
 				if (!duplicateRows.contains(Arrays.asList(i, j))) {
 					Row row = sheet.getRow(j);
 					
@@ -77,7 +74,7 @@ public class DataEntry {
 						}
 					}
 					
-					statement.executeQuery();
+					statement.execute();
 				}
 			}
 		}
