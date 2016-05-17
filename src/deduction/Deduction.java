@@ -6,6 +6,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -34,8 +35,9 @@ public class Deduction {
 		rowIndex = 2;
 	}
 	
-	public double applyDeductions(String employeeNumber, double salary) 
+	public HashMap<String, Double> applyDeductions(String employeeNumber, double salary) 
 			throws SQLException {
+		HashMap<String, Double> deductionMap = new HashMap<String, Double>();
 		getStatement.setString(1, employeeNumber);
 		ResultSet deductions = getStatement.executeQuery();
 		double deductionSum = 0;
@@ -68,6 +70,7 @@ public class Deduction {
 						newPrincipal
 				};
 				
+				deductionMap.put(deductionShortCode, amortization);
 				deductionSum += amortization;
 				rows.put(Integer.toString(rowIndex), data);
 				rowIndex++;
@@ -82,7 +85,7 @@ public class Deduction {
 			}
 		}
 		
-		return deductionSum;
+		return deductionMap;
 	}
 	
 	public void writeDeduction() {

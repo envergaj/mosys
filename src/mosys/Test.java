@@ -25,7 +25,7 @@ import validation.Validator;
 import variable.Modules;
 
 public class Test {
-/*	public static void main(String[] args)
+	public static void main(String[] args)
 	throws Exception {
 		TestDatabase tdb = new TestDatabase();
 		Connection connection = tdb.loadDatabase();
@@ -57,14 +57,14 @@ public class Test {
 //		workbook = WorkbookFactory.create(new File(filename));
 //		dataEntry(workbook, connection, Modules.DEDUCTION);
 //	
-//		filename = "test/employeeDeduction.xlsx";
-//		workbook = WorkbookFactory.create(new File(filename));
-//		dataEntry(workbook, connection, Modules.EMPLOYEE_DEDUCTION);
-//		
-//		filename = "test/timesummary.xlsx"; // you can use apples or timesummary
-//		workbook = WorkbookFactory.create(new File(filename));
-//		payroll(workbook, connection, PayrollPeriodTypes.DAILY, PayrollHalfTypes.FIRST);
-//		
+		filename = "test/employeeDeduction2.xlsx";
+		workbook = WorkbookFactory.create(new File(filename));
+		dataEntry(workbook, connection, Modules.EMPLOYEE_DEDUCTION);
+		
+		filename = "test/timesummary2-asenso.xlsx"; // you can use apples or timesummary
+		workbook = WorkbookFactory.create(new File(filename));
+		payroll(workbook, connection, PayrollPeriodTypes.DAILY, PayrollHalfTypes.FIRST);
+		
 //		filename = "test/timesummary.xlsx"; // you can use apples or timesummary
 //		workbook = WorkbookFactory.create(new File(filename));
 //		payroll(workbook, null, PayrollPeriodTypes.DAILY, PayrollHalfTypes.SECOND);
@@ -73,7 +73,7 @@ public class Test {
 //		Workbook secondHalf = WorkbookFactory.create(new File("test/payroll2.xlsx"));
 //		benefits(firstHalf, secondHalf, null);
 	}
-	*/
+	
 	public static Set<int[]> validate(Workbook workbook, Connection connection, Modules module) throws SQLException {
 		Validator validator = new Validator(workbook, connection, module);
 		

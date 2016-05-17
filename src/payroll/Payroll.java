@@ -2,8 +2,10 @@ package payroll;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -53,7 +55,8 @@ public class Payroll {
 		Map<String, Object[]> rows = new TreeMap<String, Object[]>();
 		HashSet<Integer> filledColumns = new HashSet<Integer>();
 		Sheet sheet = workbook.getSheetAt(0);
-		rows.put("1", Constants.HEADERS);
+		List<Object> headers = Arrays.asList(Constants.HEADERS);
+		rows.put("1", headers.toArray());
 		
 		for (int i = 1; i <= sheet.getLastRowNum(); i++) {
 			Row row = sheet.getRow(i);
@@ -61,6 +64,11 @@ public class Payroll {
 			double days = getNumericValue(row, "days");
 			double basic = rate * days;
 			double cola = getNumericValue(row, "cola");
+			
+			if (cola == 0) {
+				cola = getNumericValue(row, "cola1");
+			}
+			
 			double sea = getNumericValue(row, "sea");
 			double ctpa = getNumericValue(row, "ctpa");
 			double divisor = period.getDivisor();
@@ -81,12 +89,122 @@ public class Payroll {
 			double philhealth = getPhilHealth(sum);
 			double pagibig = getPagibig();
 			double leftoverSum = sum - sss - philhealth - pagibig;
-			double deductions = deduction.applyDeductions(row.getCell(positions.get("empno")).
+			HashMap<String, Double> deductionMap = deduction.applyDeductions(row.getCell(positions.get("empno")).
 					getStringCellValue().trim(), leftoverSum);
-			//double deductions = 0;
+			double deductions = deductionSum(deductionMap);
 			
 			Object[] data2 = {
 					sum,
+					getNumericValue(deductionMap, "C01"),
+					getNumericValue(deductionMap, "C02"),
+					getNumericValue(deductionMap, "L01"),
+					getNumericValue(deductionMap, "L02"),
+					getNumericValue(deductionMap, "L03"),
+					getNumericValue(deductionMap, "L04"),
+					getNumericValue(deductionMap, "L05"),
+					getNumericValue(deductionMap, "L06"),
+					getNumericValue(deductionMap, "L07"),
+					getNumericValue(deductionMap, "L08"),
+					getNumericValue(deductionMap, "L09"),
+					getNumericValue(deductionMap, "L10"),
+					getNumericValue(deductionMap, "L11"),
+					getNumericValue(deductionMap, "L12"),
+					getNumericValue(deductionMap, "L13"),
+					getNumericValue(deductionMap, "L14"),
+					getNumericValue(deductionMap, "L15"),
+					getNumericValue(deductionMap, "L16"),
+					getNumericValue(deductionMap, "L17"),
+					getNumericValue(deductionMap, "L18"),
+					getNumericValue(deductionMap, "L19"),
+					getNumericValue(deductionMap, "L20"),
+					getNumericValue(deductionMap, "L21"),
+					getNumericValue(deductionMap, "L22"),
+					getNumericValue(deductionMap, "L23"),
+					getNumericValue(deductionMap, "L24"),
+					getNumericValue(deductionMap, "L25"),
+					getNumericValue(deductionMap, "L27"),
+					getNumericValue(deductionMap, "L28"),
+					getNumericValue(deductionMap, "L29"),
+					getNumericValue(deductionMap, "L30"),
+					getNumericValue(deductionMap, "L32"),
+					getNumericValue(deductionMap, "L33"),
+					getNumericValue(deductionMap, "L34"),
+					getNumericValue(deductionMap, "L35"),
+					getNumericValue(deductionMap, "L36"),
+					getNumericValue(deductionMap, "L37"),
+					getNumericValue(deductionMap, "L38"),
+					getNumericValue(deductionMap, "L39"),
+					getNumericValue(deductionMap, "L40"),
+					getNumericValue(deductionMap, "L41"),
+					getNumericValue(deductionMap, "L42"),
+					getNumericValue(deductionMap, "L43"),
+					getNumericValue(deductionMap, "L44"),
+					getNumericValue(deductionMap, "L45"),
+					getNumericValue(deductionMap, "L46"),
+					getNumericValue(deductionMap, "L47"),
+					getNumericValue(deductionMap, "L48"),
+					getNumericValue(deductionMap, "L49"),
+					getNumericValue(deductionMap, "L50"),
+					getNumericValue(deductionMap, "L51"),
+					getNumericValue(deductionMap, "L71"),
+					getNumericValue(deductionMap, "L85"),
+					getNumericValue(deductionMap, "L88"),
+					getNumericValue(deductionMap, "M01"),
+					getNumericValue(deductionMap, "M02"),
+					getNumericValue(deductionMap, "M03"),
+					getNumericValue(deductionMap, "M04"),
+					getNumericValue(deductionMap, "M05"),
+					getNumericValue(deductionMap, "M06"),
+					getNumericValue(deductionMap, "O01"),
+					getNumericValue(deductionMap, "O02"),
+					getNumericValue(deductionMap, "O03"),
+					getNumericValue(deductionMap, "O05"),
+					getNumericValue(deductionMap, "O06"),
+					getNumericValue(deductionMap, "O07"),
+					getNumericValue(deductionMap, "O08"),
+					getNumericValue(deductionMap, "O09"),
+					getNumericValue(deductionMap, "O10"),
+					getNumericValue(deductionMap, "O11"),
+					getNumericValue(deductionMap, "O12"),
+					getNumericValue(deductionMap, "O13"),
+					getNumericValue(deductionMap, "O14"),
+					getNumericValue(deductionMap, "O15"),
+					getNumericValue(deductionMap, "O16"),
+					getNumericValue(deductionMap, "O17"),
+					getNumericValue(deductionMap, "O18"),
+					getNumericValue(deductionMap, "O19"),
+					getNumericValue(deductionMap, "O20"),
+					getNumericValue(deductionMap, "O21"),
+					getNumericValue(deductionMap, "O22"),
+					getNumericValue(deductionMap, "O23"),
+					getNumericValue(deductionMap, "O24"),
+					getNumericValue(deductionMap, "O25"),
+					getNumericValue(deductionMap, "O26"),
+					getNumericValue(deductionMap, "O27"),
+					getNumericValue(deductionMap, "O28"),
+					getNumericValue(deductionMap, "O29"),
+					getNumericValue(deductionMap, "O30"),
+					getNumericValue(deductionMap, "O31"),
+					getNumericValue(deductionMap, "O32"),
+					getNumericValue(deductionMap, "O33"),
+					getNumericValue(deductionMap, "O34"),
+					getNumericValue(deductionMap, "O35"),
+					getNumericValue(deductionMap, "O36"),
+					getNumericValue(deductionMap, "O37"),
+					getNumericValue(deductionMap, "O38"),
+					getNumericValue(deductionMap, "O39"),
+					getNumericValue(deductionMap, "O51"),
+					getNumericValue(deductionMap, "O80"),
+					getNumericValue(deductionMap, "O81"),
+					getNumericValue(deductionMap, "O82"),
+					getNumericValue(deductionMap, "O83"),
+					getNumericValue(deductionMap, "O84"),
+					getNumericValue(deductionMap, "O85"),
+					getNumericValue(deductionMap, "O86"),
+					getNumericValue(deductionMap, "O87"),
+					getNumericValue(deductionMap, "O88"),
+					getNumericValue(deductionMap, "O89"),
+					getNumericValue(deductionMap, "O90"),
 					sss,
 					philhealth,
 					pagibig,
@@ -155,7 +273,8 @@ public class Payroll {
 				getNumericValue(row, "ctpa"),
 				getNumericValue(row, "ctpa") * days,
 				getNumericValue(row, "cola1"),
-				getNumericValue(row, "cola1") * allowanceSum,
+				getNumericValue(row, "cola1") * days,
+				//getNumericValue(row, "cola1") * allowanceSum,
 				getNumericValue(row, "sea1"),
 				getNumericValue(row, "sea1") * allowanceSum,
 				getNumericValue(row, "ctpa1"),
@@ -171,7 +290,8 @@ public class Payroll {
 				getNumericValue(row, "hours"),
 				getNumericValue(row, "hours") * dividedAllRate * -1.0,
 				getNumericValue(row, "hours1"),
-				getNumericValue(row, "hours1") * dividedRate * -1.0,
+				getNumericValue(row, "hours1") * dividedAllRate * -1.0,
+				//getNumericValue(row, "hours1") * dividedRate * -1.0,
 				getNumericValue(row, "excess"),
 				getNumericValue(row, "excess") * dividedRate * 1.25,
 				getNumericValue(row, "ndreg"),
@@ -262,6 +382,14 @@ public class Payroll {
 		return 0;
 	}
 	
+	private double getNumericValue(HashMap<String, Double> deductionMap, String deduction) {
+		if (deductionMap.containsKey(deduction)) {
+			return deductionMap.get(deduction);
+		}
+		
+		return 0;
+	}
+	
 	private double getSSS(double salary) {
 		double[][] salaryRanges = Constants.SSS_RANGES;
 		
@@ -296,9 +424,19 @@ public class Payroll {
 	private Object[] concatenate(Object[] a, Object[] b) {
 	   int aLen = a.length;
 	   int bLen = b.length;
-	   Object[] c= new Object[aLen + bLen];
+	   Object[] c = new Object[aLen + bLen];
 	   System.arraycopy(a, 0, c, 0, aLen);
 	   System.arraycopy(b, 0, c, aLen, bLen);
 	   return c;
+	}
+	
+	private double deductionSum(HashMap<String, Double> deductionMap) {
+		double deductionSum = 0;
+		
+		for (Double deduction : deductionMap.values()) {
+			deductionSum += deduction; 
+		}
+		
+		return deductionSum;
 	}
 }

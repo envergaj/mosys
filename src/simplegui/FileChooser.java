@@ -30,9 +30,10 @@ public class FileChooser {
 		TestDatabase tdb = new TestDatabase();
 		Connection connection = tdb.loadDatabase();
 		final JFrame parent = new JFrame();
-        Object[] options = {"Calculate Benefits",
+        Object[] options = {
+                "Insert Deductions",
                 "Calculate Payroll",
-                "Insert Deductions"};
+        		"Calculate Benefits"};
 		int n = JOptionPane.showOptionDialog(
 				parent,
 				"What do you want to do?",
@@ -44,7 +45,7 @@ public class FileChooser {
 				options[1]);
 		
 		if (n == 1) {
-			options = new Object[] {"Second", "First"};
+			options = new Object[] {"First", "Second"};
 			int halfOption = JOptionPane.showOptionDialog(
 					parent,
 					"Is this first half or second half?",
@@ -55,12 +56,12 @@ public class FileChooser {
 					options,
 					options[1]);
 			PayrollHalfTypes half;
-			if (halfOption == 0) {
+			if (halfOption == 1) {
 				half = PayrollHalfTypes.SECOND;
 			}
 			else half = PayrollHalfTypes.FIRST;
 			
-			options = new Object[] {"Hourly", "Special Monthly", "Monthly", "Daily"};
+			options = new Object[] {"Daily", "Monthly", "Special Monthly", "Hourly"};
 			int periodOption = JOptionPane.showOptionDialog(
 					parent,
 					"What is the time period?",
@@ -71,13 +72,13 @@ public class FileChooser {
 					options,
 					options[3]);
 			PayrollPeriodTypes period;
-			if (periodOption == 0) {
+			if (periodOption == 3) {
 				period = PayrollPeriodTypes.HOURLY;
 			}
-			else if (periodOption == 1) {
+			else if (periodOption == 2) {
 				period = PayrollPeriodTypes.SPECIAL_MONTHLY;
 			}
-			else if (periodOption == 2) {
+			else if (periodOption == 1) {
 				period = PayrollPeriodTypes.MONTHLY;
 			}
 			else period = PayrollPeriodTypes.DAILY;
@@ -90,7 +91,7 @@ public class FileChooser {
 			    payroll(WorkbookFactory.create(file), connection, period, half);
 			}
 		}
-		else if (n == 0) {
+		else if (n == 2) {
 			JOptionPane.showMessageDialog(parent, "Select first half payroll.");
 			
 			JFileChooser fileChooser = new JFileChooser();
@@ -115,7 +116,7 @@ public class FileChooser {
 			double philhealthAmount = -1;
 			double pagibigAmount = -1;
 			
-			options = new Object[] {"Fixed", "Bracket"};
+			options = new Object[] {"Bracket", "Fixed"};
 			int bracketType = JOptionPane.showOptionDialog(
 					parent,
 					"Is SSS fixed or based on the employee's salary bracket?",
@@ -125,7 +126,7 @@ public class FileChooser {
 					null,
 					options,
 					options[1]);
-			if (bracketType == 0) {
+			if (bracketType == 1) {
 				sssAmount = Double.parseDouble(JOptionPane.showInputDialog(
 						parent,
 						"What is the daily SSS rate paid by the employer?"));
@@ -140,7 +141,7 @@ public class FileChooser {
 					null,
 					options,
 					options[1]);
-			if (bracketType == 0) {
+			if (bracketType == 1) {
 				philhealthAmount = Double.parseDouble(JOptionPane.showInputDialog(
 						parent,
 						"What is the daily Philhealth rate paid by the employer?"));
@@ -155,7 +156,7 @@ public class FileChooser {
 					null,
 					options,
 					options[1]);
-			if (bracketType == 0) {
+			if (bracketType == 1) {
 				pagibigAmount = Double.parseDouble(JOptionPane.showInputDialog(
 						parent,
 						"What is the daily Pagibig rate paid by the employer?"));
@@ -166,7 +167,7 @@ public class FileChooser {
 						sssAmount, philhealthAmount, pagibigAmount);
 			}
 		}
-		else if (n == 2) {
+		else if (n == 0) {
 			JOptionPane.showMessageDialog(parent, "Select deductions input.");
 			
 			JFileChooser fileChooser = new JFileChooser();
